@@ -1,0 +1,100 @@
+server:
+  port: ${PORT:14001}
+  servlet:
+    context-path: /auth
+spring:
+  application:
+    name: miracle-service-manage-auth
+  redis:
+    database: 0
+    host: 106.12.150.85
+    port: 6789
+    password: ai_redis
+    jedis:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+#  redis:
+#    cluster:
+#      nodes:
+#        - 192.168.1.103:7000
+#        - 192.168.1.103:7001
+#        - 192.168.1.103:7002
+#        - 192.168.1.103:7003
+#        - 192.168.1.103:7004
+#        - 192.168.1.103:7005
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/miracle_user?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+  druid:
+    initialSize: 5 #初始化连接大小
+    minIdle: 5     #最小连接池数量
+    maxActive: 20  #最大连接池数量
+    maxWait: 60000 #获取连接时最大等待时间，单位毫秒
+    timeBetweenEvictionRunsMillis: 60000 #配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+    minEvictableIdleTimeMillis: 300000   #配置一个连接在池中最小生存的时间，单位是毫秒
+    validationQuery: SELECT 1 from DUAL  #测试连接
+    testWhileIdle: true                  #申请连接的时候检测，建议配置为true，不影响性能，并且保证安全性
+    testOnBorrow: false                  #获取连接时执行检测，建议关闭，影响性能
+    testOnReturn: false                  #归还连接时执行检测，建议关闭，影响性能
+    poolPreparedStatements: false        #是否开启PSCache，PSCache对支持游标的数据库性能提升巨大，oracle建议开启，mysql下建议关闭
+    maxPoolPreparedStatementPerConnectionSize: 20 #开启poolPreparedStatements后生效
+    filters: stat,wall,log4j #配置扩展插件，常用的插件有=>stat:监控统计  log4j:日志  wall:防御sql注入
+    connectionProperties: 'druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000' #通过connectProperties属性来打开mergeSql功能;慢SQL记录
+
+# ---eureka---
+eureka:
+  client:
+    healthcheck:
+      enabled: true #开启服务检测
+    registerWithEureka: true #服务注册开关
+    fetchRegistry: true #服务发现开关
+    serviceUrl: #Eureka客户端与Eureka服务端进行交互的地址，多个中间用逗号分隔
+      defaultZone: ${EUREKA_SERVER:http://admin:12345@127.0.0.1:10001/eureka,http://admin:12345@127.0.0.1:10002/eureka}
+  instance:
+    prefer-ip-address:  true  #将自己的ip地址注册到Eureka服务中
+    ip-address: ${IP_ADDRESS:127.0.0.1}
+    instance-id: ${spring.application.name}:${spring.cloud.client.ip-address}:${server.port} #指定实例id
+    lease-renewal-interval-in-seconds: 10 #Client发给Server的心跳频率
+    lease-expiration-duration-in-seconds: 10 #Server收到上一次心跳时间之后，等待下一次心跳的超时时间。如果在时间内没有收到，则进行服务剔除
+# ---feign---
+feign:
+  compression:
+    request:
+      enabled: true #开启请求压缩
+      mime-type: text/html,application/xml,application/json #设置压缩的数据类型
+      min-request-size: 2048 #设置触发压缩的大小下限
+    response:
+      enabled: true #开启响应压缩
+  hystrix:
+    enabled: false #开启Feign的熔断功能,(fallback is fruitful)
+# ---encrypt---
+encrypt:
+  key-store:
+    location: classpath:/xc.keystore
+    secret: xuechengkeystore
+    alias: xckey
+    password: xuecheng
+# ---auth---
+auth:
+  tokenValiditySeconds: 1200  #token存储到redis的过期时间
+  clientId: XcWebApp
+  clientSecret: XcWebApp
+# ---Miracle custom configuration---
+miracle:
+  work:
+    workerId: 1
+    dataCenterId: 2
+#---redisson---
+#集群模式
+#redisson:
+#  client-name: myclient
+#  password:
+#  node-addresses: redis://192.168.1.103:7000,redis://192.168.1.103:7001,redis://192.168.1.103:7002,redis://192.168.1.103:7003,redis://192.168.1.103:7004,redis://192.168.1.103:7005
+redisson:
+  address: redis://106.12.150.85:6789
+  password: ai_redis
+
